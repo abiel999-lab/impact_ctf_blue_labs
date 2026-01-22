@@ -1,0 +1,44 @@
+{
+  "uid": "blue-lab-logs",
+  "title": "Blue Lab - Juice Shop Logs",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "logs",
+      "title": "Docker Logs (Juice Shop)",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 12 },
+      "targets": [
+        {
+          "expr": "{container=\"impact_juiceshop\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true
+      }
+    },
+    {
+      "type": "logs",
+      "title": "All Containers (Lab)",
+      "gridPos": { "x": 0, "y": 12, "w": 24, "h": 12 },
+      "targets": [
+        {
+          "expr": "{job=\"docker-containers\"}",
+          "refId": "B"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true
+      }
+    }
+  ]
+}

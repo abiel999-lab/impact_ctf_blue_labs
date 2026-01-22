@@ -1,0 +1,73 @@
+name: impact_ctf_blue_labs
+
+services:
+  juiceshop:
+    image: bkimminich/juice-shop:latest
+    container_name: impact_juiceshop
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - blue_lab_net
+    # IMPORTANT: No host port exposure after hardening
+    # ports: (removed)
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: impact_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ../configs/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - juiceshop
+    networks:
+      - blue_lab_net
+
+  loki:
+    image: grafana/loki:2.9.8
+    container_name: impact_loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - blue_lab_net
+
+  promtail:
+    image: grafana/promtail:2.9.8
+    container_name: impact_promtail
+    restart: unless-stopped
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ../configs/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - blue_lab_net
+    depends_on:
+      - loki
+
+
+  grafana:
+    image: grafana/grafana:10.4.6
+    container_name: impact_grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ../configs/grafana/provisioning:/etc/grafana/provisioning
+      - ../configs/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - blue_lab_net
+    depends_on:
+      - loki
+
+networks:
+  blue_lab_net:
+    driver: bridge
